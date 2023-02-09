@@ -1,91 +1,98 @@
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
-import styles from './page.module.css'
+"use client";
+import './App.css';
 
-const inter = Inter({ subsets: ['latin'] })
+import { useState } from 'react';
 
-export default function Home() {
+function validURL(str) {
+  var pattern = new RegExp(
+    "^(https?:\\/\\/)?" + // protocol
+      "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
+      "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
+      "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
+      "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
+      "(\\#[-a-z\\d_]*)?$",
+    "i"
+  ); // fragment locator
+  return !!pattern.test(str);
+}
+
+function generateURL() {
+  let r = (Math.random() + 1).toString(36).substring(7);
+  //return "https://shortest.url/" + r;
+  return "http://localhost:3000/api/" + r;
+}
+
+let nextId = 0;
+export let urlMappings = [
+  {
+    id: 99,
+    url: "https://ohshitgit.com/",
+    shortUrl: "http://localhost:3000/api/rp6c5",
+  },
+];
+
+export default function App() {
+  const [isSubmited, setIsSubmited] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  //const [urlMappings, setUrlMappings] = useState([]);
+
+  function handleShorten() {
+    if (validURL(urlInput)) {
+      if (urlMappings.find((u) => u.url === urlInput)) {
+        alert("already have one!");
+        setUrlInput("");
+      } else {
+        let shortUrl = generateURL();
+        // setUrlMappings([
+        //   ...urlMappings,
+        //   { id: nextId++, url: urlInput, shortUrl: shortUrl },
+        // ]);
+        urlMappings.push({ id: nextId++, url: urlInput, shortUrl: shortUrl });
+
+        setIsSubmited(!isSubmited);
+        setUrlInput(shortUrl);
+        console.log(urlMappings);
+      }
+    } else {
+      alert("!please enter a URL!");
+      setUrlInput("");
+      console.log(urlMappings);
+    }
+  }
+
+  function handleCopy() {
+    navigator.clipboard.writeText(urlInput).then(function (x) {
+      alert("Link copied to clipboard: " + urlInput);
+    });
+
+    setIsSubmited(!isSubmited);
+    setUrlInput("");
+  }
+
+  function handleUrlInput(e) {
+    setUrlInput(e.target.value);
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
+    <>
+      <h1>YOUR SHORTENED LINK:</h1>
+      <input
+        className="url"
+        placeholder="PASTE URL,SHORTEN & SHARE"
+        value={urlInput}
+        onChange={handleUrlInput}
+        disabled={isSubmited}
+      />
+      <button onClick={isSubmited ? handleCopy : handleShorten}>
+        {isSubmited ? "COPY" : "SHORTEN"}
+      </button>
+      {isSubmited ? (
         <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
+          View info & stats at <a href={urlInput}>{urlInput}</a>
         </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-        <div className={styles.thirteen}>
-          <Image src="/thirteen.svg" alt="13" width={40} height={31} priority />
-        </div>
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://beta.nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+      ) : (
+        <p>Shortest.url is a Free URL shortener.</p>
+      )}
+    </>
+  );
 }
